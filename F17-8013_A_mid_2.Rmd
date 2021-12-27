@@ -1,0 +1,79 @@
+---
+title: "F17-8013_7A_Midterm_2"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+
+
+
+```{r}
+NEI <- readRDS("summarySCC_PM25.rds")
+SCC <- readRDS("Source_Classification_Code.rds")
+totalNEI <- aggregate(Emissions ~ year, NEI, sum)
+plot(totalNEI$year, totalNEI$Emissions, type = "o", col = "steelblue3", main = expression("Total US "~ PM[2.5]~ "Emissions by Year"), ylab = expression("Total US "~   PM[2.5] ~ "Emissions"), xlab = "Year")
+
+baltimoredata <- subset(NEI, NEI$fips == "24510")
+totalBaltimoredata <- aggregate(Emissions ~ year, baltimoredata, sum)
+
+plot(totalBaltimoredata$year, totalBaltimoredata$Emissions, type = "o", main = expression("Total Baltimore" ~ PM[2.5] ~ "Emissions by Year"), xlab = "Year", ylab = expression("Total Baltimore "~ PM[2.5] ~ "Emissions"), col = "steelblue3")
+
+
+baltimoredata <- subset(NEI, NEI$fips == "24510")
+baltimoreType <- aggregate(Emissions ~ year + type, baltimoredata, sum)
+
+install.packages("ggplot2")
+library(ggplot2)
+ggplot(baltimoreType, aes(year, Emissions, col = type)) +
+      geom_line() +
+      geom_point() +
+      ggtitle(expression("Total Baltimore info" ~ PM[2.5] ~ "Emission Type and Year")) +
+      ylab(expression("Total Baltimore info " ~ PM[2.5] ~ "Emissions")) +
+      xlab("Year") +
+      scale_colour_discrete(name = "Type of sources") +
+      theme(legend.title = element_text(face = "bold"))
+
+
+
+
+
+SCCcoal <- SCC[grepl("coal", SCC$Short.Name, ignore.case = T),]
+NEIcoal <- NEI[NEI$SCC %in% SCCcoal$SCC,]
+totalCoal <- aggregate(Emissions ~ year + type, NEIcoal, sum)
+
+ggplot(totalCoal, aes(year, Emissions, col = type)) +
+      geom_line() +
+      geom_point() +
+      ggtitle(expression("Total US" ~ PM[2.5] ~ "Coal Emission by Type and Year")) +
+      xlab("Year") +
+      ylab(expression("US " ~ PM[2.5] ~ "Coal Emission info")) +
+      scale_colour_discrete(name = "Type of sources") +
+      theme(legend.title = element_text(face = "bold"))
+
+
+baltimoreMotordata <- subset(NEI, NEI$fips == "24510" & NEI$type == "ON-ROAD")
+baltimoreMotorAGGdata <- aggregate(Emissions ~ year, baltimoreMotordata, sum)
+
+ggplot(baltimoreMotorAGGdata, aes(year, Emissions)) +
+      geom_line(col = "steelblue3") +
+      geom_point(col = "steelblue3") +
+      ggtitle(expression("Baltimore info " ~ PM[2.5] ~ "Motor Vehicle Emissions by Year info")) +
+      xlab("Year") +
+      ylab(expression(~PM[2.5]~ "Motor Vehicle Emissions"))
+
+
+
+
+baltLosAngelesMotorsdata <- subset(NEI, NEI$fips %in% c("24510","06037") & NEI$type == "ON-ROAD")
+baltLosAngelesMotorsAGGdata <- aggregate(Emissions ~ year + fips, baltLosAngelesMotorsdata, sum)
+
+ggplot(baltLosAngelesMotorsAGGdata, aes(year, Emissions, col = fips)) +
+      geom_line() +
+      geom_point() +
+      ggtitle(expression("Baltimore and Los Angeles info" ~ PM[2.5] ~ "Motor Vehicle Emissions by Year info")) +
+      labs(x = "Year", y = expression(~PM[2.5]~ "Motor Vehicle Emissions info") ) +
+      scale_colour_discrete(name = "City", labels = c("Los Angeles", "Baltimore")) +
+      theme(legend.title = element_text(face = "bold"))
+```
+
